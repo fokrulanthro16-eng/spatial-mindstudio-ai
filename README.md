@@ -14,15 +14,41 @@
 
 ---
 
-## 📸 Screenshots & Visual Preview
+## 🌌 3D Spatial Canvas Architecture & Visual Layout
 
-| 🌌 3D Spatial Knowledge Graph | 💎 Glassmorphic Spatial UI Overlay |
-| :---: | :---: |
-| ![Spatial 3D Node Rendering](https://raw.githubusercontent.com/fokrulanthro16-eng/spatial-mindstudio-ai/main/docs/preview-3d.png) | ![High-DPI UI Control Panel](https://raw.githubusercontent.com/fokrulanthro16-eng/spatial-mindstudio-ai/main/docs/preview-ui.png) |
+```text
++-----------------------------------------------------------------------------------+
+|  [Header] 🌌 SPATIAL MINDSTUDIO AI                [OrbitControls: Active 6DOF]    |
++-----------------------------------------------------------------------------------+
+|                                                                                   |
+|            ( Node: Sun / Core Concept )                                           |
+|                     * [0, 0, 0]                                                   |
+|                    /     \                                                        |
+|      (Volumetric Beam)   (Volumetric Beam)                                        |
+|                  /         \                                                      |
+|                 v           v                                                     |
+|      ( Node: Planet A )   ( Node: Planet B )                                      |
+|        [-15.2, 8.4, 0]      [14.8, -6.2, 10.5]                                   |
+|                                                                                   |
+|                                                                                   |
+|  +-----------------------------------------------------------------------------+  |
+|  | Presets: [🧠 Brain Neural Network]  [☀️ Solar System]  [🤖 AI Agent Arch]   |  |
+|  | +-------------------------------------------------------------------------+ |  |
+|  | | Prompt: "Synthesize Web Development Architecture in 3D..."               | |  |
+|  | +-------------------------------------------------------------------------+ |  |
+|  | [ ✨ SYNTHESIZE 3D GRAPH ENGINE ]                                           |  |
+|  +-----------------------------------------------------------------------------+  |
++-----------------------------------------------------------------------------------+
+```
 
-| ⚡ Gemini Structured Response Schema |
-| :---: |
-| ![Gemini Response Schema](https://raw.githubusercontent.com/fokrulanthro16-eng/spatial-mindstudio-ai/main/docs/preview-schema.png) |
+### ⚡ Feature Grid Matrix
+
+| Feature | Capabilities & Technical Execution |
+| :--- | :--- |
+| **🌌 3D Constellation Synthesis** | Converts natural language prompts into spatial graph networks with custom node colors and emissive glows. |
+| **📐 Zero-Overlap Normalization** | Auto-scales node coordinates and calculates `THREE.Box3` bounding boxes for 100% viewport auto-framing. |
+| **💎 Glassmorphic Overlay UI** | High-DPI 4K and visionOS ready spatial control panel with 26px legible typography. |
+| **🔍 Interactive Raycasting** | Clickable 3D nodes with real-time screen-projected HTML labels and sidebar inspection panels. |
 
 ---
 
