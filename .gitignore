@@ -1,0 +1,23 @@
+# Environment variables & secrets
+.env
+backend/.env
+*.env
+
+# Python Virtual Environments
+venv/
+backend/venv/
+ENV/
+env/
+
+# Python Cache & Compiled Files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# System & IDE files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

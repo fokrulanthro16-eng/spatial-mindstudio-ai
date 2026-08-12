@@ -1,0 +1,1424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spatial MindStudio AI - 3D Graph Synthesizer</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Plus+Jakarta+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-color: #0b0c16;
+            --panel-bg: rgba(15, 18, 36, 0.45);
+            --panel-border: rgba(255, 255, 255, 0.08);
+            --panel-glow: rgba(0, 243, 255, 0.1);
+            --text-primary: #f1f3f9;
+            --text-secondary: #8f9bb7;
+            --accent-cyan: #00f3ff;
+            --accent-pink: #ff007f;
+            --accent-purple: #ab47bc;
+            --accent-green: #39f5a1;
+            --glass-blur: blur(20px);
+            --font-main: 'Plus Jakarta Sans', sans-serif;
+            --font-title: 'Outfit', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: var(--font-main);
+            font-size: 14px;
+        }
+
+        #webgl-container {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        /* Ambient background glow */
+        .ambient-glow {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(171, 71, 188, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+            top: -200px;
+            left: -200px;
+            pointer-events: none;
+            z-index: 2;
+        }
+        .ambient-glow-2 {
+            position: absolute;
+            width: 700px;
+            height: 700px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 243, 255, 0.12) 0%, rgba(0, 0, 0, 0) 70%);
+            bottom: -200px;
+            right: -200px;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* UI Overlays */
+        .ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 24px;
+        }
+
+        .interactive {
+            pointer-events: auto;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-pink), var(--accent-cyan));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.4);
+            animation: logoPulse 4s infinite alternate;
+        }
+
+        @keyframes logoPulse {
+            0% { box-shadow: 0 0 15px rgba(0, 243, 255, 0.3); }
+            100% { box-shadow: 0 0 25px rgba(255, 0, 127, 0.5); }
+        }
+
+        .brand-logo i {
+            color: #fff;
+            font-size: 18px;
+        }
+
+        .brand-text h1 {
+            font-family: var(--font-title);
+            font-weight: 800;
+            font-size: 42px;
+            letter-spacing: 0.5px;
+            background: linear-gradient(to right, #ffffff, #c7d2fe, var(--accent-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand-text p {
+            font-size: 22px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-top: -2px;
+        }
+
+        /* Top status/controls */
+        .top-controls {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-glass-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .btn-glass-icon:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* Labels overlay in 3D Space */
+        #labels-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+            overflow: hidden;
+        }
+
+        .spatial-label {
+            position: absolute;
+            transform: translate(-50%, -100%);
+            padding: 12px 24px;
+            background: rgba(11, 12, 22, 0.85);
+            border: 1px solid var(--panel-border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-family: var(--font-main);
+            font-size: 22px;
+            font-weight: bold;
+            white-space: nowrap;
+            pointer-events: auto;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.2s, border-color 0.2s;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .spatial-label:hover {
+            border-color: var(--label-hover-color, var(--accent-cyan));
+            transform: translate(-50%, -100%) scale(1.05);
+            z-index: 1000;
+        }
+
+        .spatial-label.active {
+            border-color: #fff;
+            box-shadow: 0 0 12px var(--label-hover-color, var(--accent-cyan));
+        }
+
+        /* Bottom glass panel */
+        .bottom-panel {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 75vw;
+            min-width: 950px;
+            max-width: 1500px;
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 28px;
+            padding: 36px 48px;
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .bottom-panel:focus-within {
+            border-color: rgba(0, 243, 255, 0.3);
+            box-shadow: 0 12px 45px rgba(0, 0, 0, 0.6), 0 0 20px var(--panel-glow);
+        }
+
+        /* Presets container */
+        .presets-row {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .presets-title {
+            font-size: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            margin-right: 4px;
+            font-weight: 700;
+        }
+
+        .preset-badge {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 100px;
+            font-size: 20px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .preset-badge:hover {
+            background: rgba(0, 243, 255, 0.08);
+            border-color: rgba(0, 243, 255, 0.3);
+            color: var(--accent-cyan);
+            transform: translateY(-1px);
+        }
+
+        /* Input Container */
+        .input-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            align-items: center;
+            position: relative;
+            width: 100%;
+        }
+
+        .prompt-input {
+            width: 100%;
+            height: 80px;
+            background: rgba(7, 8, 16, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px 32px;
+            color: #ffffff;
+            font-family: system-ui, -apple-system, sans-serif;
+            font-size: 26px;
+            font-weight: 600;
+            letter-spacing: normal;
+            line-height: 1.4;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .prompt-input:focus {
+            border-color: var(--accent-cyan);
+            background: rgba(7, 8, 16, 0.8);
+        }
+
+        .btn-synthesize {
+            height: 70px;
+            padding: 0 48px;
+            background: linear-gradient(135deg, var(--accent-pink) 0%, #d500f9 50%, var(--accent-cyan) 100%);
+            background-size: 200% auto;
+            border: none;
+            border-radius: 16px;
+            color: #fff;
+            font-family: var(--font-title);
+            font-weight: 800;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 0, 127, 0.3);
+            width: 100%;
+            max-width: 440px;
+        }
+
+        .btn-synthesize:hover {
+            background-position: right center;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(0, 243, 255, 0.4);
+        }
+
+        .btn-synthesize:active {
+            transform: translateY(1px);
+        }
+
+        .btn-synthesize i.loading {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Sidebar Info Panel */
+        .sidebar-panel {
+            position: absolute;
+            right: 24px;
+            top: 88px;
+            width: 320px;
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 20px;
+            padding: 20px;
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            transform: translateX(360px);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: auto;
+            z-index: 9;
+        }
+
+        .sidebar-panel.open {
+            transform: translateX(0);
+        }
+
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+        }
+
+        .sidebar-header h2 {
+            font-family: var(--font-title);
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .sidebar-close {
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 16px;
+            transition: color 0.2s;
+        }
+
+        .sidebar-close:hover {
+            color: var(--accent-pink);
+        }
+
+        .node-detail-color {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 8px;
+            box-shadow: 0 0 8px currentColor;
+        }
+
+        .node-detail-label {
+            font-family: var(--font-title);
+            font-weight: 700;
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+        }
+
+        .node-meta-item {
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+
+        .node-meta-label {
+            color: var(--text-secondary);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        /* Demo Notice Banner */
+        .demo-banner {
+            position: absolute;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            background: rgba(255, 112, 67, 0.15);
+            border: 1px solid rgba(255, 112, 67, 0.3);
+            border-radius: 100px;
+            padding: 16px 36px;
+            font-size: 22px;
+            font-weight: 600;
+            color: #ffab91;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 8;
+        }
+
+        .demo-banner.visible {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+            pointer-events: auto;
+        }
+
+        .demo-banner i {
+            color: #ff7043;
+        }
+
+        /* Instructions overlay */
+        .controls-hint {
+            position: absolute;
+            left: 24px;
+            bottom: 24px;
+            font-size: 20px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .controls-hint-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .controls-hint-item i {
+            width: 22px;
+            text-align: center;
+            color: var(--accent-cyan);
+        }
+
+        /* Toast notifications */
+        .toast {
+            position: absolute;
+            top: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-50px);
+            opacity: 0;
+            background: rgba(11, 12, 22, 0.9);
+            border: 1px solid var(--accent-cyan);
+            border-radius: 14px;
+            padding: 16px 36px;
+            font-size: 22px;
+            font-weight: 600;
+            color: #fff;
+            box-shadow: 0 5px 25px rgba(0, 243, 255, 0.2);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- WebGL Canvas Container -->
+    <div id="webgl-container"></div>
+
+    <!-- Ambient Gradients -->
+    <div class="ambient-glow"></div>
+    <div class="ambient-glow-2"></div>
+
+    <!-- HTML Labels layer (projected from 3D coords) -->
+    <div id="labels-container"></div>
+
+    <!-- UI Overlay Layer -->
+    <div class="ui-layer">
+        
+        <!-- Header -->
+        <header class="interactive">
+            <div class="brand">
+                <div class="brand-logo">
+                    <i class="fa-solid fa-cubes"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>Spatial MindStudio AI</h1>
+                    <p>3D Knowledge Constellation Synthesizer</p>
+                </div>
+            </div>
+            
+            <div class="top-controls">
+                <div class="btn-glass-icon" id="btn-reset-camera" title="Reset Camera">
+                    <i class="fa-solid fa-video"></i>
+                </div>
+                <div class="btn-glass-icon" id="btn-toggle-grid" title="Toggle Grid/Dust">
+                    <i class="fa-solid fa-circle-nodes"></i>
+                </div>
+                <div class="btn-glass-icon" id="btn-auto-rotate" title="Toggle Auto Rotation">
+                    <i class="fa-solid fa-arrows-spin"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- Warning / Demo Banner -->
+        <div class="demo-banner" id="demo-banner">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span id="demo-banner-text">Running in Demo Fallback Mode. Set GEMINI_API_KEY to synthesize using Gemini API.</span>
+        </div>
+
+        <!-- Sidebar Info Panel -->
+        <div class="sidebar-panel" id="node-info-panel">
+            <div class="sidebar-header">
+                <h2>Concept Details</h2>
+                <div class="sidebar-close" id="btn-close-sidebar">
+                    <i class="fa-solid fa-xmark"></i>
+                </div>
+            </div>
+            <div class="sidebar-body">
+                <div class="node-detail-label" id="detail-node-label">
+                    <span class="node-detail-color" id="detail-node-color"></span>
+                    <span id="detail-node-title">Node Title</span>
+                </div>
+                
+                <div class="node-meta-item">
+                    <div class="node-meta-label">Node Identifier</div>
+                    <div id="detail-node-id" style="font-family: monospace; color: #a5b4fc;">node_x</div>
+                </div>
+
+                <div class="node-meta-item">
+                    <div class="node-meta-label">Spatial Coordinates</div>
+                    <div id="detail-node-coords" style="font-family: monospace;">X: 0.00, Y: 0.00, Z: 0.00</div>
+                </div>
+
+                <div class="node-meta-item">
+                    <div class="node-meta-label">Direct Connections</div>
+                    <div id="detail-node-connections" style="color: var(--text-secondary);">None</div>
+                </div>
+                
+                <button class="btn-synthesize interactive" id="btn-focus-node" style="width: 100%; height: 40px; margin-top: 15px; font-size: 12px; border-radius: 8px;">
+                    <i class="fa-solid fa-eye"></i> Focus Concept
+                </button>
+            </div>
+        </div>
+
+        <!-- Navigation Controls Hint (Left Bottom) -->
+        <div class="controls-hint">
+            <div class="controls-hint-item">
+                <i class="fa-solid fa-rotate"></i>
+                <span>Left Click + Drag: Rotate Scene</span>
+            </div>
+            <div class="controls-hint-item">
+                <i class="fa-solid fa-arrows-up-down-left-right"></i>
+                <span>Right Click + Drag: Pan Scene</span>
+            </div>
+            <div class="controls-hint-item">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <span>Scroll: Zoom In/Out</span>
+            </div>
+            <div class="controls-hint-item">
+                <i class="fa-solid fa-hand-pointer"></i>
+                <span>Click Concept Node: Inspect & Align</span>
+            </div>
+        </div>
+
+        <!-- Bottom Panel -->
+        <div class="bottom-panel interactive">
+            <!-- Presets Row -->
+            <div class="presets-row">
+                <span class="presets-title">Presets:</span>
+                <span class="preset-badge" data-prompt="Human Brain Neural Networks structure and lobes">🧠 Human Brain Architecture</span>
+                <span class="preset-badge" data-prompt="A map of the Solar System showing inner and outer planets relative to the Sun">☀️ Solar System Constellation</span>
+                <span class="preset-badge" data-prompt="Web Development Roadmap: HTML/CSS to React, Node, and Clouds">⚡ Web Dev Roadmap</span>
+                <span class="preset-badge" data-prompt="AI Agent Lifecycle: Sensing, Planning, Memory, Action, LLM loop">🤖 AI Agent Architecture</span>
+                <span class="preset-badge" data-prompt="Vanguard Cybersecurity defense layers and threats">🛡️ Cybersecurity Mesh</span>
+            </div>
+
+            <!-- Input Container -->
+            <div class="input-container">
+                <input type="text" class="prompt-input" id="prompt-input" placeholder="Type a concept, structure, or system to synthesize in 3D..." autocomplete="off">
+                <button class="btn-synthesize" id="btn-synthesize">
+                    <span id="btn-text">Synthesize 3D Graph</span>
+                    <i class="fa-solid fa-sparkles" id="btn-icon"></i>
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Toast message overlay -->
+    <div class="toast" id="toast-message">Synthesizing 3D Graph...</div>
+
+    <!-- Three.js and OrbitControls via CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    
+    <script>
+        // --- API Config ---
+        const API_URL = 'http://localhost:8000/api/spatial-command';
+
+        // --- Application State ---
+        let scene, camera, renderer, controls;
+        let graphNodes = [];       // Array of Three.js mesh objects
+        let graphLines = [];       // Array of Connection line structures
+        let labelData = [];        // Nodes information mapping for screen space labels
+        let gridHelper, dustParticles;
+        let selectedNode = null;
+        let targetCameraPos = null;
+        let targetLookAt = new THREE.Vector3(0, 0, 0);
+        let currentLookAt = new THREE.Vector3(0, 0, 0);
+        
+        let autoRotate = false;
+        let isSynthesizing = false;
+
+        // --- DOM Elements ---
+        const container = document.getElementById('webgl-container');
+        const labelsContainer = document.getElementById('labels-container');
+        const promptInput = document.getElementById('prompt-input');
+        const btnSynthesize = document.getElementById('btn-synthesize');
+        const btnText = document.getElementById('btn-text');
+        const btnIcon = document.getElementById('btn-icon');
+        const demoBanner = document.getElementById('demo-banner');
+        const demoBannerText = document.getElementById('demo-banner-text');
+        const nodeInfoPanel = document.getElementById('node-info-panel');
+        const btnCloseSidebar = document.getElementById('btn-close-sidebar');
+        const toast = document.getElementById('toast-message');
+
+        // Sidebar content nodes
+        const detailNodeTitle = document.getElementById('detail-node-title');
+        const detailNodeColor = document.getElementById('detail-node-color');
+        const detailNodeId = document.getElementById('detail-node-id');
+        const detailNodeCoords = document.getElementById('detail-node-coords');
+        const detailNodeConnections = document.getElementById('detail-node-connections');
+        const btnFocusNode = document.getElementById('btn-focus-node');
+
+        // Top control buttons
+        const btnResetCamera = document.getElementById('btn-reset-camera');
+        const btnToggleGrid = document.getElementById('btn-toggle-grid');
+        const btnAutoRotate = document.getElementById('btn-auto-rotate');
+
+        // --- Three.js Setup ---
+        function initThree() {
+            // Scene
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x0b0c16, 0.015);
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 15, 30);
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.0;
+            container.appendChild(renderer.domElement);
+
+            // OrbitControls
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.maxDistance = 100;
+            controls.minDistance = 5;
+
+            // Lights
+            const ambientLight = new THREE.AmbientLight(0x1a237e, 1.2);
+            scene.add(ambientLight);
+
+            const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
+            dirLight.position.set(20, 40, 20);
+            scene.add(dirLight);
+
+            const pointLightBlue = new THREE.PointLight(0x00f3ff, 2, 50);
+            pointLightBlue.position.set(-15, 10, -15);
+            scene.add(pointLightBlue);
+
+            const pointLightPink = new THREE.PointLight(0xff007f, 2, 50);
+            pointLightPink.position.set(15, -10, 15);
+            scene.add(pointLightPink);
+
+            // Background Dust/Stars Particles
+            createDust();
+
+            // Circular Grid Helper for spatial references
+            createGrid();
+
+            // Window resizing
+            window.addEventListener('resize', onWindowResize);
+
+            // Click listener for Node Raycasting
+            window.addEventListener('click', onCanvasClick);
+        }
+
+        function createDust() {
+            const particleCount = 400;
+            const geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(particleCount * 3);
+            const colors = new Float32Array(particleCount * 3);
+
+            for (let i = 0; i < particleCount * 3; i += 3) {
+                // Spherical range distribution
+                const radius = 30 + Math.random() * 40;
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos((Math.random() * 2) - 1);
+
+                positions[i] = radius * Math.sin(phi) * Math.cos(theta);
+                positions[i + 1] = radius * Math.sin(phi) * Math.sin(theta);
+                positions[i + 2] = radius * Math.cos(phi);
+
+                // Blue/Magenta dust coloring
+                const mix = Math.random();
+                colors[i] = mix * 0.5 + 0.2; // R
+                colors[i + 1] = mix * 0.2 + 0.6; // G
+                colors[i + 2] = 0.9; // B
+            }
+
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            // Custom glowing particle texture (canvas generated)
+            const texture = createParticleTexture();
+            const material = new THREE.PointsMaterial({
+                size: 0.6,
+                map: texture,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.5,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false
+            });
+
+            dustParticles = new THREE.Points(geometry, material);
+            scene.add(dustParticles);
+        }
+
+        function createParticleTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 16;
+            canvas.height = 16;
+            const ctx = canvas.getContext('2d');
+            
+            const grad = ctx.createRadialGradient(8, 8, 0, 8, 8, 8);
+            grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+            grad.addColorStop(0.3, 'rgba(0, 243, 255, 0.8)');
+            grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, 16, 16);
+            
+            const tex = new THREE.Texture(canvas);
+            tex.needsUpdate = true;
+            return tex;
+        }
+
+        function createGrid() {
+            // A subtle polar grid in the XZ plane
+            const gridRadius = 25;
+            const gridRadials = 16;
+            const gridCircles = 8;
+            
+            gridHelper = new THREE.PolarGridHelper(gridRadius, gridRadials, gridCircles, 64, 0x1a237e, 0x070b19);
+            gridHelper.position.y = -6;
+            gridHelper.material.opacity = 0.35;
+            gridHelper.material.transparent = true;
+            scene.add(gridHelper);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // --- Core Graph Rendering Logic ---
+        function clearGraph() {
+            // Remove node meshes
+            graphNodes.forEach(node => scene.remove(node));
+            graphNodes = [];
+
+            // Remove connection lines
+            graphLines.forEach(line => scene.remove(line.mesh));
+            graphLines = [];
+
+            // Clear screen labels
+            labelsContainer.innerHTML = '';
+            labelData = [];
+            
+            selectedNode = null;
+            nodeInfoPanel.classList.remove('open');
+        }
+
+        function buildGraph(data) {
+            clearGraph();
+
+            // 1. Calculate coordinate normalization factor
+            let maxRawDist = 0;
+            data.nodes.forEach(n => {
+                const pos = n.position || [0, 0, 0];
+                const dist = Math.sqrt(pos[0]*pos[0] + pos[1]*pos[1] + pos[2]*pos[2]);
+                if (dist > maxRawDist) maxRawDist = dist;
+            });
+
+            // Target max radius is ~22 units so nodes fit in a balanced view
+            const TARGET_RADIUS = 22.0;
+            let normScale = 1.0;
+            if (maxRawDist > 0) {
+                if (maxRawDist < 10.0) {
+                    normScale = 16.0 / Math.max(maxRawDist, 1.0); // Expand small clusters
+                } else if (maxRawDist > TARGET_RADIUS) {
+                    normScale = TARGET_RADIUS / maxRawDist;       // Normalize large clusters
+                }
+            }
+
+            // 2. Create Nodes with normalized positions
+            data.nodes.forEach(nodeInfo => {
+                const isRoot = nodeInfo.id === 'node_0' || nodeInfo.id.includes('root') || nodeInfo.id === 'sun';
+                const size = isRoot ? 1.6 : 1.0;
+                
+                const geometry = new THREE.SphereGeometry(size, 32, 32);
+                
+                const material = new THREE.MeshStandardMaterial({
+                    color: new THREE.Color(nodeInfo.color),
+                    emissive: new THREE.Color(nodeInfo.color),
+                    emissiveIntensity: 0.8,
+                    roughness: 0.1,
+                    metalness: 0.9,
+                    transparent: true,
+                    opacity: 0.9
+                });
+
+                const mesh = new THREE.Mesh(geometry, material);
+                
+                // Normalized position
+                const posX = (nodeInfo.position[0] || 0) * normScale;
+                const posY = (nodeInfo.position[1] || 0) * normScale;
+                const posZ = (nodeInfo.position[2] || 0) * normScale;
+                
+                mesh.position.set(posX, posY, posZ);
+                mesh.userData = {
+                    id: nodeInfo.id,
+                    label: nodeInfo.label,
+                    color: nodeInfo.color,
+                    origScale: 1.0,
+                    connections: []
+                };
+
+                mesh.scale.set(0, 0, 0);
+                scene.add(mesh);
+                graphNodes.push(mesh);
+
+                if (isRoot) {
+                    const nodeLight = new THREE.PointLight(nodeInfo.color, 1.8, 25);
+                    mesh.add(nodeLight);
+                }
+
+                createHtmlLabel(nodeInfo, mesh);
+            });
+
+            // 3. Auto-Fit Camera using THREE.Box3 Bounding Box calculation
+            const boundingBox = new THREE.Box3();
+            graphNodes.forEach(mesh => boundingBox.expandByObject(mesh));
+
+            const boxCenter = new THREE.Vector3();
+            const boxSize = new THREE.Vector3();
+            boundingBox.getCenter(boxCenter);
+            boundingBox.getSize(boxSize);
+
+            // Maximum dimension across X, Y, Z
+            const maxDimension = Math.max(boxSize.x, boxSize.y, boxSize.z, 12);
+            
+            // Calculate distance based on Perspective Camera FOV
+            const fovRad = camera.fov * (Math.PI / 180);
+            let cameraDist = Math.abs(maxDimension / (2 * Math.tan(fovRad / 2)));
+            cameraDist = Math.max(35, cameraDist * 1.4); // Add margin for clear view
+
+            // Center orbit controls target on bounding box center
+            targetLookAt.copy(boxCenter);
+
+            // Move camera position smoothly to frame every single node in viewport
+            targetCameraPos = new THREE.Vector3(
+                boxCenter.x,
+                boxCenter.y + cameraDist * 0.3,
+                boxCenter.z + cameraDist
+            );
+
+            // Show demo warning if running in fallback mode
+            if (data.warning) {
+                demoBannerText.innerText = data.warning;
+                demoBanner.classList.add('visible');
+            } else {
+                demoBanner.classList.remove('visible');
+            }
+
+            // 2. Create connections (lines with cylinders so they look volumetric)
+            data.connections.forEach(conn => {
+                const sourceNode = graphNodes.find(n => n.userData.id === conn.from);
+                const targetNode = graphNodes.find(n => n.userData.id === conn.to);
+
+                if (sourceNode && targetNode) {
+                    // Register connections in metadata
+                    sourceNode.userData.connections.push(targetNode.userData.label);
+                    targetNode.userData.connections.push(sourceNode.userData.label);
+
+                    // Draw a cylinder beam connecting the nodes
+                    const sourcePos = sourceNode.position;
+                    const targetPos = targetNode.position;
+
+                    const beamMesh = createCylinderBeam(sourcePos, targetPos, sourceNode.userData.color, targetNode.userData.color);
+                    scene.add(beamMesh);
+
+                    graphLines.push({
+                        mesh: beamMesh,
+                        from: sourceNode,
+                        to: targetNode
+                    });
+                }
+            });
+
+            // Trigger Entry Scales Animations
+            animateEntry();
+        }
+
+        // Volumetric Glow Cylinder Beam connection
+        function createCylinderBeam(pStart, pEnd, colorStart, colorEnd) {
+            const distance = pStart.distanceTo(pEnd);
+            const direction = new THREE.Vector3().subVectors(pEnd, pStart).normalize();
+            
+            // Standard thin cylinder
+            const cylinderGeom = new THREE.CylinderGeometry(0.08, 0.08, distance, 8);
+            cylinderGeom.translate(0, distance / 2, 0);
+            cylinderGeom.rotateX(Math.PI / 2);
+
+            // Interpolate colors to create a gradient-like emissive beam
+            const beamColor = new THREE.Color(colorStart).clone().lerp(new THREE.Color(colorEnd), 0.5);
+            
+            const beamMat = new THREE.MeshBasicMaterial({
+                color: beamColor,
+                transparent: true,
+                opacity: 0.6,
+                blending: THREE.AdditiveBlending
+            });
+
+            const mesh = new THREE.Mesh(cylinderGeom, beamMat);
+            mesh.position.copy(pStart);
+            mesh.lookAt(pEnd);
+
+            return mesh;
+        }
+
+        // Create HTML dynamic label in Screen Space
+        function createHtmlLabel(nodeInfo, mesh) {
+            const labelEl = document.createElement('div');
+            labelEl.className = 'spatial-label';
+            labelEl.id = `label-${nodeInfo.id}`;
+            labelEl.style.setProperty('--label-hover-color', nodeInfo.color);
+            labelEl.innerHTML = `<i class="fa-solid fa-circle-dot" style="color:${nodeInfo.color}; margin-right:6px; font-size: 8px;"></i> ${nodeInfo.label}`;
+            
+            // On label click, trigger the node focus
+            labelEl.addEventListener('click', (e) => {
+                e.stopPropagation();
+                selectNode(mesh);
+            });
+
+            labelsContainer.appendChild(labelEl);
+            
+            labelData.push({
+                element: labelEl,
+                mesh: mesh
+            });
+        }
+
+        // Animate Entry scale
+        function animateEntry() {
+            let start = null;
+            const duration = 1000; // 1 second scale-in
+
+            function step(timestamp) {
+                if (!start) start = timestamp;
+                const progress = (timestamp - start) / duration;
+                
+                graphNodes.forEach(node => {
+                    const scale = Math.min(progress, 1);
+                    // Use a nice bounce/out elastic easing
+                    const ease = easeOutElastic(scale);
+                    node.scale.set(ease, ease, ease);
+                });
+
+                if (progress < 1) {
+                    requestAnimationFrame(step);
+                }
+            }
+            requestAnimationFrame(step);
+        }
+
+        // Easing function
+        function easeOutElastic(x) {
+            const c4 = (2 * Math.PI) / 3;
+            return x === 0 ? 0 : x === 1 ? 1 : Math.pow(2, -10 * x) * Math.sin((x * 10 - 0.75) * c4) + 1;
+        }
+
+        // Screen projection of labels mapping inside loop
+        function updateLabels() {
+            const tempV = new THREE.Vector3();
+            
+            labelData.forEach(item => {
+                tempV.copy(item.mesh.position);
+                // Shift text position slightly above the sphere node center
+                tempV.y += item.mesh.geometry.parameters.radius ? item.mesh.geometry.parameters.radius + 0.8 : 1.2;
+                
+                // Project 3D vector to Normalized Device Coordinates (NDC)
+                tempV.project(camera);
+
+                // Check if the node is behind the camera frustum
+                const isBehindCamera = tempV.z > 1;
+                
+                if (isBehindCamera) {
+                    item.element.style.opacity = '0';
+                    item.element.style.pointerEvents = 'none';
+                } else {
+                    // Convert NDC coordinates (-1 to 1) to screen pixels
+                    const x = (tempV.x *  .5 + .5) * window.innerWidth;
+                    const y = (tempV.y * -.5 + .5) * window.innerHeight;
+
+                    // Fade out labels that are extremely far away to reduce clutter
+                    const distance = camera.position.distanceTo(item.mesh.position);
+                    let opacity = 1.0;
+                    if (distance > 60) {
+                        opacity = Math.max(0, 1 - (distance - 60) / 25);
+                    }
+
+                    item.element.style.opacity = opacity;
+                    item.element.style.pointerEvents = opacity > 0.1 ? 'auto' : 'none';
+                    item.element.style.transform = `translate(-50%, -100%) scale(${opacity})`;
+                    item.element.style.left = `${x}px`;
+                    item.element.style.top = `${y}px`;
+                }
+            });
+        }
+
+        // --- Interactive Click/Raycast & Alignment ---
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
+        function onCanvasClick(event) {
+            // Only capture if clicking interactive UI wrappers
+            if (event.target.tagName !== 'CANVAS' && !event.target.classList.contains('spatial-label')) {
+                return;
+            }
+
+            // Standardize coordinates for Raycaster (-1 to 1)
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(graphNodes);
+
+            if (intersects.length > 0) {
+                const clickedMesh = intersects[0].object;
+                selectNode(clickedMesh);
+            } else {
+                // If clicking void, do not unselect instantly unless dragging. 
+            }
+        }
+
+        function selectNode(mesh) {
+            // Remove active classes
+            document.querySelectorAll('.spatial-label').forEach(el => el.classList.remove('active'));
+            
+            // Remove highlighting of previous node
+            if (selectedNode) {
+                selectedNode.scale.set(1, 1, 1);
+            }
+
+            selectedNode = mesh;
+            mesh.scale.set(1.4, 1.4, 1.4); // Highlight clicked node
+
+            // Highlight its screen label
+            const labelEl = document.getElementById(`label-${mesh.userData.id}`);
+            if (labelEl) labelEl.classList.add('active');
+
+            // Open Info Panel
+            nodeInfoPanel.classList.add('open');
+            detailNodeTitle.innerText = mesh.userData.label;
+            detailNodeId.innerText = mesh.userData.id;
+            detailNodeColor.style.backgroundColor = mesh.userData.color;
+            detailNodeColor.style.color = mesh.userData.color;
+            detailNodeCoords.innerText = `X: ${mesh.position.x.toFixed(2)}, Y: ${mesh.position.y.toFixed(2)}, Z: ${mesh.position.z.toFixed(2)}`;
+            
+            const connsList = mesh.userData.connections;
+            detailNodeConnections.innerText = connsList.length > 0 ? connsList.join(', ') : 'No adjacent connections';
+
+            // Set new camera interpolation target
+            focusCameraOnNode(mesh);
+        }
+
+        function focusCameraOnNode(mesh) {
+            // Move target to node position
+            targetLookAt.copy(mesh.position);
+            
+            // Move camera coordinates closer
+            const offset = new THREE.Vector3(0, 5, 12);
+            targetCameraPos = new THREE.Vector3().copy(mesh.position).add(offset);
+        }
+
+        function resetCamera() {
+            targetLookAt.set(0, 0, 0);
+            targetCameraPos = new THREE.Vector3(0, 15, 30);
+            
+            // Clear highlights
+            if (selectedNode) {
+                selectedNode.scale.set(1, 1, 1);
+                selectedNode = null;
+            }
+            document.querySelectorAll('.spatial-label').forEach(el => el.classList.remove('active'));
+            nodeInfoPanel.classList.remove('open');
+            showToast("Camera perspective centered");
+        }
+
+        // --- API Integration (Command Sender) ---
+        async function sendSpatialCommand(prompt) {
+            if (isSynthesizing || !prompt) return;
+
+            isSynthesizing = true;
+            btnSynthesize.disabled = true;
+            btnText.innerText = "Synthesizing...";
+            btnIcon.className = "fa-solid fa-arrows-spin loading";
+            btnIcon.style.color = "#ff007f";
+            
+            showToast("Contacting Spatial AI Engine...");
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ prompt: prompt }),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API server returned code ${response.status}`);
+                }
+
+                const result = await response.json();
+                
+                // Build WebGL graph dynamically
+                buildGraph(result);
+                
+                showToast("3D Constellation Rendered Successfully!");
+
+            } catch (err) {
+                console.error("Synthesize error:", err);
+                showToast("Failed to connect to backend api. Showing local fallback graph.");
+                
+                // Generate a client-side procedural fallback in case backend is down
+                const fallbackData = createClientFallbackGraph(prompt);
+                buildGraph(fallbackData);
+            } finally {
+                isSynthesizing = false;
+                btnSynthesize.disabled = false;
+                btnText.innerText = "Synthesize 3D Graph";
+                btnIcon.className = "fa-solid fa-sparkles";
+                btnIcon.style.color = "";
+            }
+        }
+
+        // Client-side fallback to make it bulletproof
+        function createClientFallbackGraph(prompt) {
+            const words = prompt.split(' ').filter(w => w.length > 3).map(w => w.replace(/[^\w]/g, ''));
+            const keywords = words.length > 0 ? words.slice(0, 8) : ["Three.js", "WebGL", "Fallback", "Local", "Graphics", "Interactive"];
+            
+            const nodes = [{
+                id: "node_0",
+                label: prompt.length > 20 ? prompt.substring(0, 18) + "..." : prompt,
+                position: [0, 0, 0],
+                color: "#ff007f"
+            }];
+
+            const connections = [];
+            const colors = ["#00f3ff", "#39f5a1", "#ab47bc", "#fbc02d", "#ff7043"];
+
+            keywords.forEach((word, index) => {
+                const angle = (index / keywords.length) * Math.PI * 2;
+                const radius = 9.0;
+                const x = radius * Math.cos(angle);
+                const y = Math.sin(index) * 2;
+                const z = radius * Math.sin(angle);
+                
+                const id = `node_${index + 1}`;
+                nodes.push({
+                    id: id,
+                    label: word.charAt(0).toUpperCase() + word.slice(1),
+                    position: [x, y, z],
+                    color: colors[index % colors.length]
+                });
+
+                connections.push({
+                    from: "node_0",
+                    to: id
+                });
+            });
+
+            return {
+                action: "CREATE_SPATIAL_GRAPH",
+                nodes: nodes,
+                connections: connections,
+                camera_target: [0, 0, 0],
+                warning: "Backend API Unreachable. Rendered via local graphics engine."
+            };
+        }
+
+        function showToast(msg) {
+            toast.innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // --- Animation Loop ---
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Orbit controls update
+            controls.update();
+
+            // Subtle floating of nodes to make it look organic
+            const elapsed = Date.now() * 0.001;
+            graphNodes.forEach((node, i) => {
+                // If it is the selected node, scale it up a bit more, else keep normal scale
+                const targetScale = selectedNode === node ? 1.4 : 1.0;
+                node.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.1);
+                
+                // Add a gentle floating motion
+                const frequency = 0.5 + (i * 0.1);
+                node.position.y += Math.sin(elapsed * frequency + i) * 0.005;
+            });
+
+            // Update cylinder connection alignments (in case nodes move)
+            graphLines.forEach(line => {
+                const start = line.from.position;
+                const end = line.to.position;
+                const dist = start.distanceTo(end);
+                
+                line.mesh.position.copy(start);
+                line.mesh.lookAt(end);
+                // Scale cylinder height to bridge distance
+                const scaleY = dist / line.mesh.geometry.parameters.height;
+                // Wait, our cylinder geom has standard height, but we already set height during cylinder creation. 
+                // So if positions drift, we can rescale. Since positions only float slightly, we're okay.
+            });
+
+            // Smooth camera animations (Interpolation / Lerp)
+            if (targetCameraPos) {
+                camera.position.lerp(targetCameraPos, 0.05);
+                if (camera.position.distanceTo(targetCameraPos) < 0.05) {
+                    targetCameraPos = null; // Stop interpolation
+                }
+            }
+
+            // Smooth orbit look-at center transitions
+            currentLookAt.lerp(targetLookAt, 0.05);
+            controls.target.copy(currentLookAt);
+
+            // Background rotation
+            if (autoRotate && controls) {
+                controls.autoRotate = true;
+                controls.autoRotateSpeed = 0.5;
+            } else {
+                controls.autoRotate = false;
+            }
+
+            if (dustParticles) {
+                dustParticles.rotation.y = elapsed * 0.02;
+                dustParticles.rotation.x = elapsed * 0.01;
+            }
+
+            // Project 3D labels onto screen HTML coordinates
+            updateLabels();
+
+            // Render
+            renderer.render(scene, camera);
+        }
+
+        // --- Event Listeners and Init ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initThree();
+            animate();
+
+            // Setup preset clicks
+            document.querySelectorAll('.preset-badge').forEach(badge => {
+                badge.addEventListener('click', () => {
+                    const prompt = badge.dataset.prompt;
+                    promptInput.value = prompt;
+                    sendSpatialCommand(prompt);
+                });
+            });
+
+            // Send prompt button
+            btnSynthesize.addEventListener('click', () => {
+                const prompt = promptInput.value.trim();
+                if (prompt) {
+                    sendSpatialCommand(prompt);
+                } else {
+                    showToast("Please enter a valid command first!");
+                }
+            });
+
+            // Handle enter key in input
+            promptInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    const prompt = promptInput.value.trim();
+                    if (prompt) {
+                        sendSpatialCommand(prompt);
+                    }
+                }
+            });
+
+            // Close Sidebar
+            btnCloseSidebar.addEventListener('click', () => {
+                nodeInfoPanel.classList.remove('open');
+                if (selectedNode) {
+                    selectedNode.scale.set(1, 1, 1);
+                    selectedNode = null;
+                }
+                document.querySelectorAll('.spatial-label').forEach(el => el.classList.remove('active'));
+            });
+
+            // Focus Node Button in sidebar
+            btnFocusNode.addEventListener('click', () => {
+                if (selectedNode) {
+                    focusCameraOnNode(selectedNode);
+                    showToast(`Aligning camera to: ${selectedNode.userData.label}`);
+                }
+            });
+
+            // Header UI Controls
+            btnResetCamera.addEventListener('click', resetCamera);
+            
+            btnToggleGrid.addEventListener('click', () => {
+                gridHelper.visible = !gridHelper.visible;
+                dustParticles.visible = !dustParticles.visible;
+                showToast(gridHelper.visible ? "Grid and space dust enabled" : "Grid and space dust disabled");
+            });
+
+            btnAutoRotate.addEventListener('click', () => {
+                autoRotate = !autoRotate;
+                btnAutoRotate.style.color = autoRotate ? 'var(--accent-cyan)' : 'var(--text-primary)';
+                btnAutoRotate.style.borderColor = autoRotate ? 'var(--accent-cyan)' : 'var(--panel-border)';
+                showToast(autoRotate ? "Auto rotation active" : "Auto rotation disabled");
+            });
+
+            // Load initial preset structure on startup to populate screen beautifully
+            setTimeout(() => {
+                sendSpatialCommand("AI Agent Lifecycle: Sensing, Planning, Memory, Action, LLM loop");
+            }, 800);
+        });
+    </script>
+</body>
+</html>
