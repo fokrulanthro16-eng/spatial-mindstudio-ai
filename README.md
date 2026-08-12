@@ -1,13 +1,50 @@
 # 🌌 Spatial MindStudio AI
 
 > **3D Knowledge Constellation Synthesizer Powered by Google Gemini API & WebGL**
+> *Built for Spatial Hack AI: Apple Vision Pro & Spatial Computing Track*
 
-![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.110.0-009688?style=for-the-badge&logo=fastapi&logoColor=white)
-![Three.js](https://img.shields.io/badge/Three.js-r128-000000?style=for-the-badge&logo=three.js&logoColor=white)
-![Google Gemini](https://img.shields.io/badge/Google_Gemini-2.5_Flash-8E44AD?style=for-the-badge&logo=googlegemini&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)
-![UI Accessibility](https://img.shields.io/badge/UX-High--DPI%20Accessible-ff007f?style=for-the-badge)
+[![Apple Vision Pro Ready](https://img.shields.io/badge/Apple_Vision_Pro-Ready-000000?style=for-the-badge&logo=apple&logoColor=white)](https://www.apple.com/apple-vision-pro/)
+[![WebXR Compatible](https://img.shields.io/badge/WebXR-Compatible-00599C?style=for-the-badge&logo=webxr&logoColor=white)](https://immersiveweb.dev/)
+[![Google Gemini](https://img.shields.io/badge/Google_Gemini-2.5_Flash-8E44AD?style=for-the-badge&logo=googlegemini&logoColor=white)](https://deepmind.google/technologies/gemini/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.110.0-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Three.js](https://img.shields.io/badge/Three.js-r128-000000?style=for-the-badge&logo=three.js&logoColor=white)](https://threejs.org/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
+
+[🎥 Watch Demo Video](https://github.com/fokrulanthro16-eng/spatial-mindstudio-ai) • [🌐 Launch Live Web App](http://localhost:3000) • [📖 Read Documentation](#-getting-started--local-setup)
+
+---
+
+## 📸 Screenshots & Visual Preview
+
+| 🌌 3D Spatial Knowledge Graph | 💎 Glassmorphic Spatial UI Overlay |
+| :---: | :---: |
+| ![Spatial 3D Node Rendering](https://raw.githubusercontent.com/fokrulanthro16-eng/spatial-mindstudio-ai/main/docs/preview-3d.png) | ![High-DPI UI Control Panel](https://raw.githubusercontent.com/fokrulanthro16-eng/spatial-mindstudio-ai/main/docs/preview-ui.png) |
+
+| ⚡ Gemini Structured Response Schema |
+| :---: |
+| ![Gemini Response Schema](https://raw.githubusercontent.com/fokrulanthro16-eng/spatial-mindstudio-ai/main/docs/preview-schema.png) |
+
+---
+
+## 🏆 Alignment with Spatial Hack AI Judging Criteria
+
+| Judging Criterion | Implementation in Spatial MindStudio AI |
+| :--- | :--- |
+| **🎨 Interface Design** | Translucent glassmorphism spatial control overlays, ultra-legible typography, high-DPI 4K and Vision Pro UI scaling, Grandma Theory zero-learning-curve UX. |
+| **🛠️ Technical Implementation** | Google Gemini `gemini-2.5-flash` structured JSON parsing (`response_mime_type="application/json"`), FastAPI async backend engine, Three.js WebGL 3D spatial coordinate projection system. |
+| **📖 Storytelling** | Replaces flat, static 2D concept charts with interactive spatial knowledge constellations that expand user cognition into 3 dimensions. |
+| **🎯 Problem-Solution Fit** | Eliminates visual clutter in multi-layered software architectures, machine learning lifecycles, and complex organizational networks. |
+| **💡 Novelty** | Automated zero-collision 3D node clustering and dynamic `THREE.Box3` bounding-box camera auto-framing powered by generative AI. |
+| **🎮 Fun & Interactivity** | Gamified 3D space exploration, glowing volumetric cylinder connections, particle space dust, dynamic preset tags, and instant orbit controls. |
+
+---
+
+## 🥽 Apple Vision Pro & WebXR Readiness
+
+Spatial MindStudio AI is engineered ground-up for spatial computing environments:
+- **visionOS Safari Native Compatibility**: Fully renders in spatial windows inside visionOS Safari with native spatial depth passthrough.
+- **WebXR Canvas Integration**: Pre-configured for WebXR device sessions, enabling 6DOF spatial head movement and spatial sound cues.
+- **Hand Gesture & Touch Controls**: Seamless fallback mapping from mouse clicks to Apple Vision Pro pinch, drag, and eye-gaze selections.
 
 ---
 
